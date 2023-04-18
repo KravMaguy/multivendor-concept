@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+
 const Todos = [
   { task: "do laundry", done: false, id: 1 },
   { task: "clean room", done: true, id: 2 },
@@ -8,20 +10,28 @@ function App() {
   const [todos, setTodos] = useState([...Todos]);
   const [todo, setTodo] = useState("");
   const addTodo = () => {
-    const newTodos = [
-      ...todos,
-      { task: todo, done: false, id: todos.length + 1 },
-    ];
+    if (!todo) return;
+    const newTodos = [...todos, { task: todo, done: false, id: uuidv4() }];
     setTodos(newTodos);
+    setTodo("");
   };
-  console.log(todos);
+
+  const deleteTodo = (id) => {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos);
+  };
+
   return (
     <div>
       <input value={todo} onChange={(e) => setTodo(e.target.value)}></input>
       <button onClick={() => addTodo(todo)}>+</button>
       <ul>
-        {todos.map((todo) => (
-          <li>{todo.task}</li>
+        {todos.map(({ id, task }) => (
+          <div key={id}>
+            <li>{task}</li>
+            <button>edit</button>
+            <button onClick={() => deleteTodo(id)}>X</button>
+          </div>
         ))}
       </ul>
     </div>
