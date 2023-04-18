@@ -21,6 +21,16 @@ function App() {
     setTodos(updatedTodos);
   };
 
+  const editTodo = (id, newTask) => {
+    const updatedTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        return { ...todo, task: newTask };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+  };
+
   return (
     <div>
       <input value={todo} onChange={(e) => setTodo(e.target.value)}></input>
@@ -29,7 +39,9 @@ function App() {
         {todos.map(({ id, task }) => (
           <div key={id}>
             <li>{task}</li>
-            <button>edit</button>
+            <button onClick={() => editTodo(id, prompt("Edit task:"))}>
+              Edit
+            </button>
             <button onClick={() => deleteTodo(id)}>X</button>
           </div>
         ))}
