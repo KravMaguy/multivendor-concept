@@ -5,6 +5,12 @@ import "firebase/compat/firestore";
 
 firebase.initializeApp({
   // your Firebase config here
+  apiKey: "AIzaSyCID7pPkLB7PN_ktRXAvIYrmOG9mLtrYms",
+  authDomain: "multi-vendor-16cf0.firebaseapp.com",
+  projectId: "multi-vendor-16cf0",
+  storageBucket: "multi-vendor-16cf0.appspot.com",
+  messagingSenderId: "234011330640",
+  appId: "1:234011330640:web:469b9ac826865779b0e955",
 });
 
 function App() {
@@ -12,6 +18,7 @@ function App() {
   const [todo, setTodo] = useState("");
 
   useEffect(() => {
+    // Fetch todos from Firebase on component mount
     const fetchTodos = async () => {
       const todosRef = firebase.firestore().collection("todos");
       const snapshot = await todosRef.get();
@@ -26,19 +33,38 @@ function App() {
 
   const addTodo = async () => {
     if (!todo) return;
-    const todosRef = firebase.firestore().collection("todos");
-    await todosRef.add({ task: todo, done: false });
-    setTodo("");
+    try {
+      const todosRef = firebase.firestore().collection("todos");
+      await todosRef.add({ task: todo, done: false });
+      setTodo("");
+      setTodos([...todos, { task: todo, done: false }]);
+    } catch (error) {
+      console.error("Error adding todo:", error);
+    }
   };
 
   const editTodo = async (id, newTask) => {
-    const todosRef = firebase.firestore().collection("todos");
-    await todosRef.doc(id).update({ task: newTask });
+    try {
+      const todosRef = firebase.firestore().collection("todos");
+      await todosRef.doc(id).update({ task: newTask });
+      const updatedTodos = todos.map((todo) =>
+        todo.id === id ? { ...todo, task: newTask } : todo
+      );
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error("Error editing todo:", error);
+    }
   };
 
   const deleteTodo = async (id) => {
-    const todosRef = firebase.firestore().collection("todos");
-    await todosRef.doc(id).delete();
+    try {
+      const todosRef = firebase.firestore().collection("todos");
+      await todosRef.doc(id).delete();
+      const updatedTodos = todos.filter((todo) => todo.id !== id);
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
   };
 
   return (
