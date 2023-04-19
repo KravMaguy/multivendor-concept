@@ -1,53 +1,64 @@
-import { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useState, useEffect } from "react";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
 
-const Todos = [
-  { task: "do laundry", done: false, id: 1 },
-  { task: "clean room", done: true, id: 2 },
-];
+firebase.initializeApp({
+  // your Firebase config here
+});
 
 function App() {
-  const [todos, setTodos] = useState([...Todos]);
+  const [todos, setTodos] = useState([]);
   const [todo, setTodo] = useState("");
-  const addTodo = () => {
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      const todosRef = firebase.firestore().collection("todos");
+      const snapshot = await todosRef.get();
+      const todosData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTodos(todosData);
+    };
+    fetchTodos();
+  }, []);
+
+  const addTodo = async () => {
     if (!todo) return;
-    const newTodos = [...todos, { task: todo, done: false, id: uuidv4() }];
-    setTodos(newTodos);
+    const todosRef = firebase.firestore().collection("todos");
+    await todosRef.add({ task: todo, done: false });
     setTodo("");
   };
 
-  const deleteTodo = (id) => {
-    const updatedTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(updatedTodos);
+  const editTodo = async (id, newTask) => {
+    const todosRef = firebase.firestore().collection("todos");
+    await todosRef.doc(id).update({ task: newTask });
   };
 
-  const editTodo = (id, newTask) => {
-    const updatedTodos = todos.map((todo) => {
-      if (todo.id === id) {
-        return { ...todo, task: newTask };
-      }
-      return todo;
-    });
-    setTodos(updatedTodos);
+  const deleteTodo = async (id) => {
+    const todosRef = firebase.firestore().collection("todos");
+    await todosRef.doc(id).delete();
   };
 
   return (
     <div>
       <input value={todo} onChange={(e) => setTodo(e.target.value)}></input>
-      <button onClick={() => addTodo(todo)}>+</button>
+      <button onClick={() => addTodo()}>Add</button>
       <ul>
-        {todos.map(({ id, task }) => (
-          <div key={id}>
-            <li>{task}</li>
-            <button onClick={() => editTodo(id, prompt("Edit task:"))}>
+        {todos.map((todo) => (
+          <li key={todo.id}>
+            {todo.task}
+            <button
+              onClick={() => editTodo(todo.id, prompt("Enter new task:"))}
+            >
               Edit
             </button>
-            <button onClick={() => deleteTodo(id)}>X</button>
-          </div>
+            <button onClick={() => deleteTodo(todo.id)}>X</button>
+          </li>
         ))}
       </ul>
     </div>
   );
 }
-
 export default App;
