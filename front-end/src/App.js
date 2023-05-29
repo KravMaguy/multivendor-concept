@@ -3,7 +3,6 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 const { REACT_APP_FIREBASE_API_KEY, REACT_APP_FIREBASE_PROJID } = process.env;
-
 firebase.initializeApp({
   // Your Firebase project configuration here
   apiKey: REACT_APP_FIREBASE_API_KEY,
@@ -86,20 +85,25 @@ function App() {
   };
 
   const editTodo = async (id, newTask) => {
-    try {
-      const todosRef = firebase
-        .firestore()
-        .collection("users")
-        .doc(user.uid)
-        .collection("todos");
-      await todosRef.doc(id).update({ task: newTask });
-      const updatedTodos = todos.map((todo) =>
-        todo.id === id ? { ...todo, task: newTask } : todo
-      );
-      setTodos(updatedTodos);
-    } catch (error) {
-      console.error("Error editing todo:", error);
-    }
+    const { task } = newTask;
+    const updatedTodos = todos.map((todo) =>
+      todo.id === id ? { ...todo, task } : todo
+    );
+    setTodos(updatedTodos);
+    // try {
+    //   const todosRef = firebase
+    //     .firestore()
+    //     .collection("users")
+    //     .doc(user.uid)
+    //     .collection("todos");
+    //   await todosRef.doc(id).update({ task: newTask });
+    //   const updatedTodos = todos.map((todo) =>
+    //     todo.id === id ? { ...todo, task: newTask } : todo
+    //   );
+    //   setTodos(updatedTodos);
+    // } catch (error) {
+    //   console.error("Error editing todo:", error);
+    // }
   };
 
   const deleteTodo = async (id) => {
@@ -131,27 +135,30 @@ function App() {
       <button onClick={() => signOut()}>Sign out</button>
       <h2>Todos</h2>
       <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>
-            <input
-              type='checkbox'
-              checked={todo.done}
-              onChange={(e) => {
-                const done = e.target.checked;
-                editTodo(todo.id, { ...todo, done });
-              }}
-            />
-            <input
-              type='text'
-              value={todo.task}
-              onChange={(e) => {
-                const task = e.target.value;
-                editTodo(todo.id, { ...todo, task });
-              }}
-            />
-            <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-          </li>
-        ))}
+        {todos.map((todo) => {
+          console.log(todo);
+          return (
+            <li key={todo.id}>
+              {/* <input
+                type='checkbox'
+                checked={todo.done}
+                onChange={(e) => {
+                  const done = e.target.checked;
+                  editTodo(todo.id, { ...todo, done });
+                }}
+              /> */}
+              <input
+                type='text'
+                value={todo.task}
+                onChange={(e) => {
+                  const task = e.target.value;
+                  editTodo(todo.id, { ...todo, task });
+                }}
+              />
+              <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+            </li>
+          );
+        })}
       </ul>
       <div>
         <input
